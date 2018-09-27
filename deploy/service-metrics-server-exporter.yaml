@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "8000"
+    prometheus.io/scrape: "true"
+  namespace: platform
+  name: metrics-server-exporter
+  labels:
+    app: metrics-server-exporter
+    product: platform
+    process: exporter
+spec:
+  ports:
+  - port: 9104
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: metrics-server-exporter
+    product: platform
+    process: exporter
