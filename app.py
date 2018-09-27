@@ -9,7 +9,7 @@ import string
 from prometheus_client import Metric, start_http_server
 from prometheus_client.core import REGISTRY
 
-API_URL = os.environ.get('K8S_ENDPOINT') or "https://kubernetes.default.svc"
+API_URL = os.environ.get('K8S_ENDPOINT', 'https://kubernetes.default.svc')
 
 API_NODES = API_URL + "/apis/metrics.k8s.io/v1beta1/nodes"
 API_PODS  = API_URL + "/apis/metrics.k8s.io/v1beta1/pods"
@@ -24,7 +24,7 @@ class MetricsServerExporter:
                   return f.readline()
 
     def kube_metrics(self):
-        token = self.kube_token_exists() or os.environ.get('K8S_TOKEN')
+        token = os.environ.get('K8S_TOKEN', self.kube_token_exists())
 
         headers = { "Authorization": "Bearer " + token }
 
@@ -45,10 +45,10 @@ class MetricsServerExporter:
         metrics_nodes_cpu = Metric('kube_metrics_server_nodes_cpu', 'Metrics Server Nodes CPU', 'gauge')
 
         for node in nodes.get('items', []):
-            node_instance = node['metadata']['name'] or {}
-            node_cpu = node['usage']['cpu'] or {}
+            node_instance = node['metadata']['name']
+            node_cpu = node['usage']['cpu']
             node_cpu = node_cpu.translate(str.maketrans('', '', string.ascii_letters))
-            node_mem = node['usage']['memory'] or {}
+            node_mem = node['usage']['memory']
             node_mem = node_mem.translate(str.maketrans('', '', string.ascii_letters))
 
             metrics_nodes_mem.add_sample('kube_metrics_server_nodes_mem', value=int(node_mem), labels={ 'instance': node_instance })
@@ -61,13 +61,13 @@ class MetricsServerExporter:
         metrics_pods_cpu = Metric('kube_metrics_server_pods_cpu', 'Metrics Server Pods CPU', 'gauge')
 
         for pod in pods.get('items', []):
-            pod_name = pod['metadata']['name'] or {}
-            pod_namespace = pod['metadata']['namespace'] or {}
+            pod_name = pod['metadata']['name']
+            pod_namespace = pod['metadata']['namespace']
             for container in pod['containers']:
-                pod_container_name = container['name'] or {}
-                pod_container_cpu = container['usage']['cpu'] or {}
+                pod_container_name = container['name']
+                pod_container_cpu = container['usage']['cpu']
                 pod_container_cpu = pod_container_cpu.translate(str.maketrans('', '', string.ascii_letters))
-                pod_container_mem = container['usage']['memory'] or {}
+                pod_container_mem = container['usage']['memory']
                 pod_container_mem = pod_container_mem.translate(str.maketrans('', '', string.ascii_letters))
 
             metrics_pods_mem.add_sample('kube_metrics_server_pods_mem', value=int(pod_container_mem), labels={ 'pod_name': pod_name, 'pod_namespace': pod_namespace, 'pod_container_name': pod_container_name })

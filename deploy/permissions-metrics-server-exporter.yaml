@@ -34,4 +34,3 @@ roleRef:
   kind: ClusterRole
   name: metrics-server-exporter
   apiGroup: rbac.authorization.k8s.io
----
