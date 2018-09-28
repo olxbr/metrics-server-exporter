@@ -9,24 +9,24 @@ import string
 from prometheus_client import Metric, start_http_server
 from prometheus_client.core import REGISTRY
 
-API_URL = os.environ.get('K8S_ENDPOINT', 'https://kubernetes.default.svc')
+SVC_TOKEN = os.environ.get('K8S_FILEPATH_TOKEN', '/var/run/secrets/kubernetes.io/serviceaccount/token')
+TOKEN =     os.environ.get('K8S_TOKEN')
+API_URL =   os.environ.get('K8S_ENDPOINT', 'https://kubernetes.default.svc')
 
-API_NODES = API_URL + "/apis/metrics.k8s.io/v1beta1/nodes"
-API_PODS  = API_URL + "/apis/metrics.k8s.io/v1beta1/pods"
-
-SVCACCT_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+API_NODES = "{}/apis/metrics.k8s.io/v1beta1/nodes".format(API_URL)
+API_PODS  = "{}/apis/metrics.k8s.io/v1beta1/pods".format(API_URL)
 
 class MetricsServerExporter:
 
-    def kube_token_exists(self):
-        if os.path.exists(SVCACCT_FILE):
-           with open(SVCACCT_FILE, 'r') as f:
-                  return f.readline()
+    def __init__(self):
+        if os.path.exists(SVC_TOKEN):
+           with open(SVC_TOKEN, 'r') as f:
+                  self.token = f.readline()
+        else:
+            self.token = TOKEN
 
     def kube_metrics(self):
-        token = os.environ.get('K8S_TOKEN', self.kube_token_exists())
-
-        headers = { "Authorization": "Bearer " + token }
+        headers = { "Authorization": "Bearer {}".format(self.token) }
 
         payload = {
             'nodes': requests.get(API_NODES, headers=headers, verify=False),
@@ -34,7 +34,6 @@ class MetricsServerExporter:
         }
 
         return payload
-
 
     def collect(self):
         ret = self.kube_metrics()
