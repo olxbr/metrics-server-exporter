@@ -19,11 +19,14 @@ API_PODS  = "{}/apis/metrics.k8s.io/v1beta1/pods".format(API_URL)
 class MetricsServerExporter:
 
     def __init__(self):
+        self.token = self.set_token()
+
+    def set_token(self):
         if os.path.exists(SVC_TOKEN):
            with open(SVC_TOKEN, 'r') as f:
-                  self.token = f.readline()
+                  return f.readline()
         else:
-            self.token = TOKEN
+            return TOKEN
 
     def kube_metrics(self):
         headers = { "Authorization": "Bearer {}".format(self.token) }
