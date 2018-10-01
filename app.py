@@ -9,31 +9,33 @@ import string
 from prometheus_client import Metric, start_http_server
 from prometheus_client.core import REGISTRY
 
-SVC_TOKEN = os.environ.get('K8S_FILEPATH_TOKEN', '/var/run/secrets/kubernetes.io/serviceaccount/token')
-TOKEN =     os.environ.get('K8S_TOKEN')
-API_URL =   os.environ.get('K8S_ENDPOINT', 'https://kubernetes.default.svc')
-
-API_NODES = "{}/apis/metrics.k8s.io/v1beta1/nodes".format(API_URL)
-API_PODS  = "{}/apis/metrics.k8s.io/v1beta1/pods".format(API_URL)
-
 class MetricsServerExporter:
 
     def __init__(self):
+        self.svc_token     = os.environ.get('K8S_FILEPATH_TOKEN', '/var/run/secrets/kubernetes.io/serviceaccount/token')
+        self.api_url       = os.environ.get('K8S_ENDPOINT', 'https://kubernetes.default.svc')
+        self.api_nodes_url = "{}/apis/metrics.k8s.io/v1beta1/nodes".format(self.api_url)
+        self.api_pods_url  = "{}/apis/metrics.k8s.io/v1beta1/pods".format(self.api_url)
+
         self.token = self.set_token()
 
     def set_token(self):
-        if os.path.exists(SVC_TOKEN):
-           with open(SVC_TOKEN, 'r') as f:
-                  return f.readline()
-        else:
-            return TOKEN
+        if os.environ.get('K8S_TOKEN') is not None:
+            return os.environ.get('K8S_TOKEN')
+
+        if os.path.exists(self.svc_token):
+            with open(self.svc_token, 'r') as f:
+                os.environ['K8S_TOKEN'] = f.readline()
+            return os.environ.get('K8S_TOKEN')
+
+        return None
 
     def kube_metrics(self):
         headers = { "Authorization": "Bearer {}".format(self.token) }
 
         payload = {
-            'nodes': requests.get(API_NODES, headers=headers, verify=False),
-            'pods':  requests.get(API_PODS,  headers=headers, verify=False)
+            'nodes': requests.get(self.api_nodes_url, headers=headers, verify=False),
+            'pods':  requests.get(self.api_pods_url,  headers=headers, verify=False)
         }
 
         return payload
@@ -83,3 +85,4 @@ if __name__ == '__main__':
     start_http_server(8000)
     while True:
         time.sleep(5)
+
