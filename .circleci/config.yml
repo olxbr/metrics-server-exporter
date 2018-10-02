@@ -79,16 +79,10 @@ workflows:
           requires:
             - run_tests
       - publish_master:
-          requires:
-            - run_tests
-            - build_image
           filters:
             branches:
               only: master
       - publish_tag:
-          requires:
-            - run_tests
-            - build_image
           filters:
             tags:
               only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
