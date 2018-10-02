@@ -79,7 +79,7 @@ workflows:
           requires:
             - run_tests
       - publish_master:
-          requires:
+          requires: 
             - run_tests
             - build_image
           filters:
