@@ -76,13 +76,9 @@ workflows:
     jobs:
       - run_tests
       - build_image:
-          requires:
-            - run_tests
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*$/
-            branches:
-              only: master
       - publish_master:
           requires: 
             - build_image
@@ -93,7 +89,7 @@ workflows:
           requires: 
             - build_image
           filters:
-            branches:
-              ignore: /.*/
             tags:
               only: /^v[0-9]+(\.[0-9]+)*$/
+            branches:
+              ignore: /.*/
