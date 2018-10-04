@@ -67,6 +67,11 @@ class MetricsServerExporter:
         for pod in pods.get('items', []):
             pod_name = pod['metadata']['name']
             pod_namespace = pod['metadata']['namespace']
+
+            pod_container_mem = 0
+            pod_container_cpu = 0
+            pod_container_name = ""
+
             for container in pod['containers']:
                 pod_container_name = container['name']
                 pod_container_cpu = container['usage']['cpu']
@@ -85,4 +90,3 @@ if __name__ == '__main__':
     start_http_server(8000)
     while True:
         time.sleep(5)
-
