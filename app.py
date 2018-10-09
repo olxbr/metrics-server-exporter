@@ -5,6 +5,7 @@ import requests
 import json
 import time
 import string
+import datetime
 
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -50,12 +51,20 @@ class MetricsServerExporter:
         return payload
 
     def collect(self):
+        start_time = datetime.datetime.now()
         ret = self.kube_metrics()
+        end_time = datetime.datetime.now()
+        total_time = (end_time - start_time).total_seconds()
+
         nodes = json.loads(ret['nodes'].text)
         pods = json.loads(ret['pods'].text)
 
         metrics_nodes_mem = Metric('kube_metrics_server_nodes_mem', 'Metrics Server Nodes Memory', 'gauge')
         metrics_nodes_cpu = Metric('kube_metrics_server_nodes_cpu', 'Metrics Server Nodes CPU', 'gauge')
+
+        metrics_response_time = Metric('kube_metrics_server_response_time', 'Metrics Server API Response Time', 'gauge')
+        metrics_response_time.add_sample('kube_metrics_server_response_time', value=total_time, labels={ 'api_url': '{}/metrics.k8s.io'.format(self.api_url) })
+        yield metrics_response_time
 
         for node in nodes.get('items', []):
             node_instance = node['metadata']['name']
