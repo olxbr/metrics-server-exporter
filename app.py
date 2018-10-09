@@ -6,6 +6,9 @@ import json
 import time
 import string
 
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
 from prometheus_client import Metric, start_http_server
 from prometheus_client.core import REGISTRY
 
@@ -33,9 +36,15 @@ class MetricsServerExporter:
     def kube_metrics(self):
         headers = { "Authorization": "Bearer {}".format(self.token) }
 
+        session = requests.Session()
+        retry = Retry(connect=3, backoff_factor=0.1)
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+
         payload = {
-            'nodes': requests.get(self.api_nodes_url, headers=headers, verify=False),
-            'pods':  requests.get(self.api_pods_url,  headers=headers, verify=False)
+            'nodes': session.get(self.api_nodes_url, headers=headers, verify=False),
+            'pods':  session.get(self.api_pods_url,  headers=headers, verify=False)
         }
 
         return payload
