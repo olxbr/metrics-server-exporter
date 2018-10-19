@@ -97,8 +97,8 @@ class MetricsServerExporter:
                 pod_container_mem = container['usage']['memory']
                 pod_container_mem = pod_container_mem.translate(str.maketrans('', '', string.ascii_letters))
 
-            metrics_pods_mem.add_sample('kube_metrics_server_pods_mem', value=int(pod_container_mem), labels={ 'pod_name': pod_name, 'pod_namespace': pod_namespace, 'pod_container_name': pod_container_name })
-            metrics_pods_cpu.add_sample('kube_metrics_server_pods_cpu', value=int(pod_container_cpu), labels={ 'pod_name': pod_name, 'pod_namespace': pod_namespace, 'pod_container_name': pod_container_name })
+                metrics_pods_mem.add_sample('kube_metrics_server_pods_mem', value=int(pod_container_mem), labels={ 'pod_name': pod_name, 'pod_namespace': pod_namespace, 'pod_container_name': pod_container_name })
+                metrics_pods_cpu.add_sample('kube_metrics_server_pods_cpu', value=int(pod_container_cpu), labels={ 'pod_name': pod_name, 'pod_namespace': pod_namespace, 'pod_container_name': pod_container_name })
 
         yield metrics_pods_mem
         yield metrics_pods_cpu
