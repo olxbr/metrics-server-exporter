@@ -26,6 +26,11 @@ metrics-server-exporter provides cpu and memory metrics for nodes and pods, dire
 * pod_namespace
 * pod_container_name
 
+### API metrics
+
+* kube_metrics_server_response_time
+	* Provides API response time in seconds.
+
 ### Variables
 
   * K8S_ENDPOINT
@@ -36,6 +41,9 @@ metrics-server-exporter provides cpu and memory metrics for nodes and pods, dire
 
   * K8S_FILEPATH_TOKEN
     * Path of ServiceAccount token file (default /var/run/secrets/kubernetes.io/serviceaccount/token)
+
+  * NAMES_BLACKLIST
+    * A list of names from pods, containers or namespaces to exclude from metrics.
 
 ### How to build
 
