@@ -26,6 +26,11 @@ metrics-server-exporter provides cpu and memory metrics for nodes and pods, dire
 * pod_namespace
 * pod_container_name
 
+### API metrics
+
+* kube_metrics_server_response_time
+	* Provides API response time in seconds.
+
 ### Variables
 
   * K8S_ENDPOINT
@@ -36,6 +41,9 @@ metrics-server-exporter provides cpu and memory metrics for nodes and pods, dire
 
   * K8S_FILEPATH_TOKEN
     * Path of ServiceAccount token file (default /var/run/secrets/kubernetes.io/serviceaccount/token)
+
+  * NAMES_BLACKLIST
+    * A list of names from pods, containers or namespaces to exclude from metrics.
 
 ### How to build
 
@@ -53,5 +61,23 @@ Set you target k8s context and apply the deployment files, and don't forget to p
 
     $ kubectl apply -n platform -f deploy/
     $ kubectl patch sa/metrics-server-exporter -n platform -p '{"imagePullSecrets":[{"name":"viva-registry"}]}'
+
+#### Blacklist 
+
+If you want, you could blacklist some names of namespaces, pods or containers, you just need to apply this ConfigMap, replacing the example names
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics-server-exporter
+  namespace: platform
+  labels:
+    app: metrics-server-exporter
+    product: platform
+    process: exporter
+data:
+  NAMES_BLACKLIST: kube-proxy,calico-node,kube2iam # example names
+```
 
 
