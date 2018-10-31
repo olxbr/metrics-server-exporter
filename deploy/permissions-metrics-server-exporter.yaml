@@ -4,9 +4,7 @@ kind: ClusterRole
 metadata:
   name: metrics-server-exporter
   labels:
-    app: metrics-server-exporter
-    product: platform
-    process: exporter
+    k8s-app: metrics-server-exporter
 rules:
 - apiGroups: ["metrics.k8s.io"]
   resources: ["*"]
@@ -16,11 +14,8 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: metrics-server-exporter
-  namespace: platform
   labels:
-    app: metrics-server-exporter
-    product: platform
-    process: exporter
+    k8s-app: metrics-server-exporter
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
