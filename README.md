@@ -62,4 +62,22 @@ Set you target k8s context and apply the deployment files, and don't forget to p
     $ kubectl apply -n platform -f deploy/
     $ kubectl patch sa/metrics-server-exporter -n platform -p '{"imagePullSecrets":[{"name":"viva-registry"}]}'
 
+#### Blacklist 
+
+If you want, you could blacklist some names of namespaces, pods or containers, you just need to apply this ConfigMap, replacing the example names
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics-server-exporter
+  namespace: platform
+  labels:
+    app: metrics-server-exporter
+    product: platform
+    process: exporter
+data:
+  NAMES_BLACKLIST: kube-proxy,calico-node,kube2iam # example names
+```
+
 
