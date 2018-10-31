@@ -59,7 +59,7 @@ You will need `K8S_TOKEN` and `K8S_ENDPOINT` to access the api-server
 
 Set you target k8s context and apply the deployment files
 
-    $ kubectl apply -n platform -f deploy/
+    $ kubectl apply -f deploy/
 
 #### Blacklist 
 
