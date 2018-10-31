@@ -5,7 +5,6 @@ metadata:
     prometheus.io/path: /metrics
     prometheus.io/port: "8000"
     prometheus.io/scrape: "true"
-  namespace: platform
   name: metrics-server-exporter
   labels:
     k8s-app: metrics-server-exporter

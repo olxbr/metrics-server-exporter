@@ -24,7 +24,6 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: metrics-server-exporter
-  namespace: platform
 roleRef:
   kind: ClusterRole
   name: metrics-server-exporter
