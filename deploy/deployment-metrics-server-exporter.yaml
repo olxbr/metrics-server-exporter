@@ -1,12 +1,9 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  namespace: platform
   name: metrics-server-exporter
   labels:
-    app: metrics-server-exporter
-    product: platform
-    process: exporter
+    k8s-app: metrics-server-exporter
 spec:
   replicas: 1
   strategy:
@@ -17,14 +14,12 @@ spec:
   template:
     metadata:
       labels:
-        app: metrics-server-exporter
-        product: platform
-        process: exporter
+        k8s-app: metrics-server-exporter
     spec:
       serviceAccountName: metrics-server-exporter
       containers:
       - name: metrics-server-exporter
-        image: vivareal/metrics-server-exporter:v0.0.4
+        image: vivareal/metrics-server-exporter:v0.0.5
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000

@@ -57,10 +57,9 @@ You will need `K8S_TOKEN` and `K8S_ENDPOINT` to access the api-server
 
 ### How to deploy
 
-Set you target k8s context and apply the deployment files, and don't forget to patch your ServiceAccount.
+Set you target k8s context and apply the deployment files
 
-    $ kubectl apply -n platform -f deploy/
-    $ kubectl patch sa/metrics-server-exporter -n platform -p '{"imagePullSecrets":[{"name":"viva-registry"}]}'
+    $ kubectl apply -f deploy/
 
 #### Blacklist 
 
@@ -71,11 +70,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: metrics-server-exporter
-  namespace: platform
   labels:
-    app: metrics-server-exporter
-    product: platform
-    process: exporter
+    k8s-app: metrics-server-exporter
 data:
   NAMES_BLACKLIST: kube-proxy,calico-node,kube2iam # example names
 ```
