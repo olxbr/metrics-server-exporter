@@ -5,9 +5,9 @@ metrics-server-exporter provides cpu and memory metrics for nodes and pods, dire
 ### Node metrics
 
 * kube_metrics_server_nodes_mem
-	* Provides nodes memory information.
+	* Provides nodes memory information in kibibytes.
 * kube_metrics_server_nodes_cpu
-	* Provides nodes CPU information.
+	* Provides nodes CPU information in nanocores.
 
 ##### labels
 
