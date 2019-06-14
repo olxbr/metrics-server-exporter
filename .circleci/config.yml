@@ -80,12 +80,14 @@ workflows:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*$/
       - publish_master:
+          context: docker-access
           requires: 
             - build_image
           filters:
             branches:
               only: master
       - publish_tag:
+          context: docker-access
           requires: 
             - build_image
           filters:
