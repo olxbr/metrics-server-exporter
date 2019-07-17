@@ -12,7 +12,7 @@ metrics-server-exporter provides cpu and memory metrics for nodes and pods, dire
 ##### labels
 
 * instance
-	
+
 ### Pod metrics
 
 * kube_metrics_server_pods_mem
@@ -61,7 +61,7 @@ Set you target k8s context and apply the deployment files
 
     $ kubectl apply -f deploy/
 
-#### Blacklist 
+#### Blacklist
 
 If you want, you could blacklist some names of namespaces, pods or containers, you just need to apply this ConfigMap, replacing the example names
 
@@ -76,4 +76,33 @@ data:
   NAMES_BLACKLIST: kube-proxy,calico-node,kube2iam # example names
 ```
 
+### Minikube
 
+How to test in Minikube
+
+	$ minikube delete; minikube start --vm-driver=kvm2 --cpus=2 --memory=4096
+	* Deleting "minikube" from kvm2 ...
+	* The "minikube" cluster has been deleted.
+	* minikube v1.2.0 on linux (amd64)
+	* Creating kvm2 VM (CPUs=2, Memory=4096MB, Disk=20000MB) ...
+	* Configuring environment for Kubernetes v1.15.0 on Docker 18.09.6
+	* Downloading kubelet v1.15.0
+	* Downloading kubeadm v1.15.0
+	* Pulling images ...
+	* Launching Kubernetes ...
+	* Verifying: apiserver proxy etcd scheduler controller dns
+	* Done! kubectl is now configured to use "minikube"
+
+Enable metrics-server addon
+
+	$ minikube addons enable metrics-server
+	* metrics-server was successfully enabled
+
+Deploy the files in minikube
+
+	$ kubectl apply -R -f deploy/
+
+Then, test the connectivity
+
+	$ kubectl port-forward -n kube-system svc/metrics-server-exporter 9104:9104 &
+	$ curl http://localhost:9104/metrics
