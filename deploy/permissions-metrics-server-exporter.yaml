@@ -23,6 +23,7 @@ metadata:
   name: metrics-server-exporter
 subjects:
 - kind: ServiceAccount
+  namespace: kube-system
   name: metrics-server-exporter
 roleRef:
   kind: ClusterRole
