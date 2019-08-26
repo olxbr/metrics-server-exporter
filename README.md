@@ -42,8 +42,16 @@ metrics-server-exporter provides cpu and memory metrics for nodes and pods, dire
   * K8S_FILEPATH_TOKEN
     * Path of ServiceAccount token file (default /var/run/secrets/kubernetes.io/serviceaccount/token)
 
+  * K8S_CA_CERT_PATH
+    * Path of Kubernetes CA certificate (default /var/run/secrets/kubernetes.io/serviceaccount/ca.crt)
+
   * NAMES_BLACKLIST
     * A list of names from pods, containers or namespaces to exclude from metrics.
+
+### Options
+
+  * --insecure-tls
+    * Disables TLS verification of the Kubernetes API Server.  (Not recommended in production)
 
 ### How to build
 
@@ -51,9 +59,9 @@ metrics-server-exporter provides cpu and memory metrics for nodes and pods, dire
 
 ### How to run
 
-You will need `K8S_TOKEN` and `K8S_ENDPOINT` to access the api-server
+You will need `K8S_TOKEN` and `K8S_ENDPOINT` to access the api-server.  Use "--insecure-tls" or mount the CA certificate into the container.  Kubernetes will provide the CA certificate in a Kubernetes installation.
 
-    $ docker run -p 8000:8000 -e "K8S_ENDPOINT=${K8S_ENDPOINT}" -e "K8S_TOKEN=${K8S_TOKEN}" vivareal/metrics-server-exporter
+    $ docker run -p 8000:8000 -e "K8S_ENDPOINT=${K8S_ENDPOINT}" -e "K8S_TOKEN=${K8S_TOKEN}" vivareal/metrics-server-exporter --insecure-tls
 
 ### How to deploy
 

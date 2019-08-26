@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import datetime
+import getopt
+import json
 import os
 import requests
-import json
-import time
 import string
-import datetime
+import sys
+import time
 
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -17,13 +19,17 @@ class MetricsServerExporter:
 
     def __init__(self):
         self.svc_token       = os.environ.get('K8S_FILEPATH_TOKEN', '/var/run/secrets/kubernetes.io/serviceaccount/token')
-        self.ca_cert         = os.environ.get('K8S_CA_CERTIFICATE', '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
+        self.ca_cert         = os.environ.get('K8S_CA_CERT_PATH', '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
         self.api_url         = os.environ.get('K8S_ENDPOINT', 'https://kubernetes.default.svc')
         self.names_blacklist = os.environ.get('NAMES_BLACKLIST', '').split(',')
         self.api_nodes_url   = "{}/apis/metrics.k8s.io/v1beta1/nodes".format(self.api_url)
         self.api_pods_url    = "{}/apis/metrics.k8s.io/v1beta1/pods".format(self.api_url)
 
+        self.insecure_tls = self.set_tls_mode()
         self.token = self.set_token()
+
+    def set_tls_mode(self):
+        return ('--insecure-tls','') in options
 
     def set_token(self):
         if os.environ.get('K8S_TOKEN') is not None:
@@ -40,11 +46,14 @@ class MetricsServerExporter:
         headers = { "Authorization": "Bearer {}".format(self.token) }
 
         session = requests.Session()
-        retry = Retry(connect=3, backoff_factor=0.1)
+        retry = Retry(total=3, connect=3, backoff_factor=0.1)
         adapter = HTTPAdapter(max_retries=retry)
         session.mount('http://', adapter)
         session.mount('https://', adapter)
-        session.verify = self.ca_cert
+        if self.insecure_tls:
+            session.verify = False
+        elif os.path.exists(self.ca_cert):
+            session.verify = self.ca_cert
 
         payload = {
             'nodes': session.get(self.api_nodes_url, headers=headers),
@@ -108,6 +117,7 @@ class MetricsServerExporter:
         yield metrics_pods_cpu
 
 if __name__ == '__main__':
+    options, remainder = getopt.gnu_getopt(sys.argv[1:], '', ['insecure-tls'])
     REGISTRY.register(MetricsServerExporter())
     start_http_server(8000)
     while True:
