@@ -17,6 +17,7 @@ class MetricsServerExporter:
 
     def __init__(self):
         self.svc_token       = os.environ.get('K8S_FILEPATH_TOKEN', '/var/run/secrets/kubernetes.io/serviceaccount/token')
+        self.ca_cert         = os.environ.get('K8S_CA_CERTIFICATE', '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
         self.api_url         = os.environ.get('K8S_ENDPOINT', 'https://kubernetes.default.svc')
         self.names_blacklist = os.environ.get('NAMES_BLACKLIST', '').split(',')
         self.api_nodes_url   = "{}/apis/metrics.k8s.io/v1beta1/nodes".format(self.api_url)
@@ -43,10 +44,11 @@ class MetricsServerExporter:
         adapter = HTTPAdapter(max_retries=retry)
         session.mount('http://', adapter)
         session.mount('https://', adapter)
+        session.verify = self.ca_cert
 
         payload = {
-            'nodes': session.get(self.api_nodes_url, headers=headers, verify=False),
-            'pods':  session.get(self.api_pods_url,  headers=headers, verify=False)
+            'nodes': session.get(self.api_nodes_url, headers=headers),
+            'pods':  session.get(self.api_pods_url,  headers=headers)
         }
 
         return payload
