@@ -13,7 +13,7 @@ jobs:
       - checkout
       - run:
           name: Install kubeval
-          command: curl -s -L https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz && tar xf kubeval-linux-amd64.tar.gz kubeval
+          command: curl -s -LO https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz && tar xf kubeval-linux-amd64.tar.gz kubeval
 
       - run:
           name: Kubernetes yaml files validation (kubeval)
