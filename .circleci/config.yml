@@ -3,8 +3,8 @@ defaults: &defaults
   machine:
     image: circleci/classic:latest
   environment:
-    KUBE_VERSION: 1.11.0
-    KUBEVAL_VERSION: 0.7.3
+    KUBE_VERSION: 1.13.9
+    KUBEVAL_VERSION: 0.13.0
 
 jobs:
   run_tests:
@@ -13,13 +13,11 @@ jobs:
       - checkout
       - run:
           name: Install kubeval
-          command: |
-            wget https://github.com/garethr/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz
-            tar xf kubeval-linux-amd64.tar.gz
+          command: curl -s -LO https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz && tar xf kubeval-linux-amd64.tar.gz kubeval
+
       - run:
           name: Kubernetes yaml files validation (kubeval)
-          command: |
-            find deploy -name "*.yaml" -not -name '*customresourcedefinition*' | xargs ./kubeval --kubernetes-version ${KUBE_VERSION} 
+          command: ./kubeval --kubernetes-version ${KUBE_VERSION} -d deploy
 
   build_image:
     <<: *defaults
@@ -57,7 +55,7 @@ jobs:
     <<: *defaults
     steps:
        - checkout
-       - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
        - restore_cache:
           keys:
              - metrics-server-exporter-{{ .Environment.CIRCLE_SHA1 }}
@@ -81,14 +79,14 @@ workflows:
               only: /^v[0-9]+(\.[0-9]+)*$/
       - publish_master:
           context: docker-access
-          requires: 
+          requires:
             - build_image
           filters:
             branches:
               only: master
       - publish_tag:
           context: docker-access
-          requires: 
+          requires:
             - build_image
           filters:
             tags:
