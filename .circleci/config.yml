@@ -3,7 +3,7 @@ defaults: &defaults
   machine:
     image: circleci/classic:latest
   environment:
-    KUBE_VERSION: 1.14.8
+    KUBE_VERSION: 1.14.0
     KUBEVAL_VERSION: 0.13.0
 
 jobs:
