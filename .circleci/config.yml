@@ -3,7 +3,7 @@ defaults: &defaults
   machine:
     image: circleci/classic:latest
   environment:
-    KUBE_VERSION: 1.13.9
+    KUBE_VERSION: 1.14.8
     KUBEVAL_VERSION: 0.13.0
 
 jobs:
@@ -38,7 +38,7 @@ jobs:
     <<: *defaults
     steps:
        - checkout
-       - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
        - restore_cache:
           keys:
              - metrics-server-exporter-{{ .Environment.CIRCLE_SHA1 }}
