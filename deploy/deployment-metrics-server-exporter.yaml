@@ -2,6 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: metrics-server-exporter
+  namespace: metrics-server-exporter
   labels:
     k8s-app: metrics-server-exporter
 spec:
@@ -17,10 +18,15 @@ spec:
         k8s-app: metrics-server-exporter
     spec:
       serviceAccountName: metrics-server-exporter
+      nodeSelector:
+          "beta.kubernetes.io/os": linux
       containers:
       - name: metrics-server-exporter
-        image: vivareal/metrics-server-exporter:v0.0.5
+        image: vivareal/metrics-server-exporter:v0.0.6
         imagePullPolicy: IfNotPresent
+        env:
+        - name: K8S_ENDPOINT
+          value: "https://kubernetes.default.svc.cluster.local"
         ports:
         - containerPort: 8000
           protocol: TCP
