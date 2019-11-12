@@ -19,7 +19,7 @@ spec:
       serviceAccountName: metrics-server-exporter
       containers:
       - name: metrics-server-exporter
-        image: vivareal/metrics-server-exporter:v0.0.5
+        image: vivareal/metrics-server-exporter:v0.0.6
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
