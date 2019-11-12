@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "metrics-server-exporter.fullname" . }}
+  namespace: {{ include "metrics-server-exporter.namespace" . }}
+  labels:
+{{ include "metrics-server-exporter.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "metrics-server-exporter.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "metrics-server-exporter.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- if .Values.custom }}
+          env:
+          {{- if .Values.custom.k8s_endpoint }}
+          - name: K8S_ENDPOINT
+            value: {{ .Values.custom.k8s_endpoint }}
+          {{- end }}
+          {{- if .Values.custom.names_blacklist }}
+          - name: NAMES_BLACKLIST
+            value: "{{ .Values.custom.names_blacklist }}"
+          {{- end }}
+          {{- if .Values.custom.k8s_token }}
+          - name: K8S_TOKEN
+            value: "{{ .Values.custom.k8s_token }}"
+          {{- end }}
+          {{- if .Values.custom.k8s_filepath_token }}
+          - name: K8S_FILEPATH_TOKEN
+            value: "{{ .Values.custom.k8s_filepath_token }}"
+          {{- end }}
+          {{- if .Values.custom.k8s_ca_cert_path }}
+          - name: K8S_CA_CERT_PATH
+            value: "{{ .Values.custom.k8s_ca_cert_path }}"
+          {{- end }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8000
+              scheme: HTTP
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8000
+              scheme: HTTP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

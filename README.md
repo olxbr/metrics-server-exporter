@@ -114,3 +114,13 @@ Then, test the connectivity
 
 	$ kubectl port-forward -n kube-system svc/metrics-server-exporter 9104:9104 &
 	$ curl http://localhost:9104/metrics
+
+### Helm
+
+To install metrics-server-exporter, use
+
+	$ helm install --name=metrics-server-exporter --namespace kube-system helm/
+
+You could set the variables using the `--set` parameters
+
+	$ helm install --name=metrics-server-exporter --set custom.k8s_endpoint=https://kubernetes.default.svc helm/
