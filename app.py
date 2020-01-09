@@ -25,7 +25,7 @@ class MetricsServerExporter:
         self.labelSelector   = os.environ.get('LABEL_SELECTOR','')
 
         self.api_nodes_url   = "{}/apis/metrics.k8s.io/v1beta1/nodes".format(self.api_url)
-        self.api_pods_url = "{}/apis/metrics.k8s.io/v1beta1/pods".format( self.api_url,self.labelSelector )
+        self.api_pods_url = "{}/apis/metrics.k8s.io/v1beta1/pods".format( self.api_url)
 
         self.insecure_tls = self.set_tls_mode()
         self.token = self.set_token()
