@@ -1,4 +1,4 @@
-# metrics-server-exporter [![CircleCI](https://circleci.com/gh/grupozap/metrics-server-exporter.svg?style=svg)](https://circleci.com/gh/grupozap/metrics-server-exporter) [![Total alerts](https://img.shields.io/lgtm/alerts/g/grupozap/metrics-server-exporter.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/grupozap/metrics-server-exporter/alerts/) [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/grupozap/metrics-server-exporter.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/grupozap/metrics-server-exporter/context:python)
+# metrics-server-exporter [![CircleCI](https://circleci.com/gh/parinapatel/metrics-server-exporter.svg?style=svg)](https://circleci.com/gh/parinapatel/metrics-server-exporter)  [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/parinapatel/metrics-server-exporter.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/parinapatel/metrics-server-exporter/context:python)
 
 metrics-server-exporter provides cpu and memory metrics for nodes and pods, directly querying the metrics-server API `/apis/metrics.k8s.io/v1beta1/{pods, nodes}`
 
@@ -47,7 +47,10 @@ metrics-server-exporter provides cpu and memory metrics for nodes and pods, dire
 
   * NAMES_BLACKLIST
     * A list of names from pods, containers or namespaces to exclude from metrics.
-
+  * NAMESPACE_WHITELIST
+    * A list of namespace to scrape from this way you can create namespaced rolebinding instead of cluster binding. ( quite useful for larger clusters ) ( default : '' (all namespaces))
+  * LABEL_SELECTOR
+    * A list of Label Selectors.
 ### Options
 
   * --insecure-tls

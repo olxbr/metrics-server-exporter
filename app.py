@@ -2,7 +2,6 @@
 
 import datetime
 import getopt
-import json
 import os
 import requests
 import string
@@ -22,8 +21,11 @@ class MetricsServerExporter:
         self.ca_cert         = os.environ.get('K8S_CA_CERT_PATH', '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
         self.api_url         = os.environ.get('K8S_ENDPOINT', 'https://kubernetes.default.svc')
         self.names_blacklist = os.environ.get('NAMES_BLACKLIST', '').split(',')
+        self.namespaces      = os.environ.get('NAMESPACE_WHITELIST','').split(',')
+        self.labelSelector   = os.environ.get('LABEL_SELECTOR','')
+
         self.api_nodes_url   = "{}/apis/metrics.k8s.io/v1beta1/nodes".format(self.api_url)
-        self.api_pods_url    = "{}/apis/metrics.k8s.io/v1beta1/pods".format(self.api_url)
+        self.api_pods_url = "{}/apis/metrics.k8s.io/v1beta1/pods".format( self.api_url,self.labelSelector )
 
         self.insecure_tls = self.set_tls_mode()
         self.token = self.set_token()
@@ -42,9 +44,12 @@ class MetricsServerExporter:
 
         return None
 
+    def set_namespaced_pod_url(self,namespace):
+        return '{}/apis/metrics.k8s.io/v1beta1/namespaces/{}/pods?labelSelector={}'.format( self.api_url ,namespace,self.labelSelector )
+
     def kube_metrics(self):
         headers = { "Authorization": "Bearer {}".format(self.token) }
-
+        query = { 'labelSelector' : self.labelSelector }
         session = requests.Session()
         retry = Retry(total=3, connect=3, backoff_factor=0.1)
         adapter = HTTPAdapter(max_retries=retry)
@@ -54,11 +59,22 @@ class MetricsServerExporter:
             session.verify = False
         elif os.path.exists(self.ca_cert):
             session.verify = self.ca_cert
-
-        payload = {
-            'nodes': session.get(self.api_nodes_url, headers=headers),
-            'pods':  session.get(self.api_pods_url,  headers=headers)
-        }
+        if self.namespaces:
+            pod_data = None
+            for namespace in self.namespaces:
+                if pod_data is None:
+                    pod_data = session.get(self.set_namespaced_pod_url(namespace), headers=headers, params=query).json()
+                else:
+                    pod_data['items'] += session.get(self.set_namespaced_pod_url(namespace), headers=headers, params=query).json()['items']
+            payload = {
+                'nodes': session.get(self.api_nodes_url, headers=headers, params=query).json(),
+                'pods':  pod_data
+            }
+        else:
+            payload = {
+                'nodes': session.get(self.api_nodes_url, headers=headers, params=query).json(),
+                'pods':  session.get(self.api_pods_url,  headers=headers, params=query).json()
+            }
 
         return payload
 
@@ -68,8 +84,8 @@ class MetricsServerExporter:
         end_time = datetime.datetime.now()
         total_time = (end_time - start_time).total_seconds()
 
-        nodes = json.loads(ret['nodes'].text)
-        pods = json.loads(ret['pods'].text)
+        nodes = ret['nodes']
+        pods = ret['pods']
 
         metrics_nodes_mem = Metric('kube_metrics_server_nodes_mem', 'Metrics Server Nodes Memory', 'gauge')
         metrics_nodes_cpu = Metric('kube_metrics_server_nodes_cpu', 'Metrics Server Nodes CPU', 'gauge')
