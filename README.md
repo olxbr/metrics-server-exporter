@@ -110,7 +110,7 @@ Enable metrics-server addon
 
 Deploy the files in minikube
 
-	$ kubectl apply -R -f deploy/
+	$ kubectl apply -R -f deploy/ -n kube-system
 
 Then, test the connectivity
 
