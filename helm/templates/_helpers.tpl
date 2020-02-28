@@ -43,14 +43,3 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
-
-{{/*
-Set namespace, use "kube-system" as default.
-*/}}
-{{- define "metrics-server-exporter.namespace" -}}
-  {{- if .Values.namespaceOverride -}}
-    {{- .Values.namespaceOverride -}}
-  {{- else -}}
-    kube-system
-  {{- end -}}
-{{- end -}}
