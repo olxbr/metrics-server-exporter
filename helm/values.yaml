@@ -24,6 +24,16 @@ service:
 #   k8s_filepath_token: ""
 #   k8s_ca_cert_path: ""
 
+podAnnotations:
+  # When installing Prometheus from official Helm charts, it has a job rule that will
+  # discover the pods with the following annotations.
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8000"
+
+serviceAnnotations: {}
+  # Alternatively official Prometheus chart can probe services.
+  # prometheus.io/probe: "true"
+
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
