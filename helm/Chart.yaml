@@ -2,4 +2,4 @@ apiVersion: v1
 appVersion: "0.0.6"
 description: A Helm chart for metrics-server-exporter
 name: metrics-server-exporter
-version: 1.0.0
+version: 0.1.0
