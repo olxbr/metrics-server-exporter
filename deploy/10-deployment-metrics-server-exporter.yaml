@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: metrics-server-exporter
@@ -6,6 +6,9 @@ metadata:
     k8s-app: metrics-server-exporter
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: metrics-server-exporter
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -19,7 +22,7 @@ spec:
       serviceAccountName: metrics-server-exporter
       containers:
       - name: metrics-server-exporter
-        image: vivareal/metrics-server-exporter:v0.0.6
+        image: vivareal/metrics-server-exporter:v0.0.7
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
