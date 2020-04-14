@@ -51,3 +51,12 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+env: {}
+  # Add ability to include more opinionated environment variables
+  # - name: POD_IP
+  #   valueFrom:
+  #     fieldRef:
+  #       fieldPath: status.podIP
+  # - name: SERVICE_8000_NAME
+  #   value: metrics-server-exporter
