@@ -129,10 +129,9 @@ You could set the variables using the `--set` parameters
 	
 ### Grafana Dashboard
 
-You can use the following dashboard to plot metrics-exporter-metrics to Grafana.
+You can use the following dashboard to plot metrics from metrics-server-exporter to Grafana.
 
 ![image](https://user-images.githubusercontent.com/3788237/82919047-e6b1d880-9f4b-11ea-9133-584d9b6abf86.png)
 
 https://grafana.com/grafana/dashboards/12363
-
 
