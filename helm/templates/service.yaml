@@ -16,6 +16,9 @@ spec:
       targetPort: 8000
       protocol: TCP
       name: http
+{{- if .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+{{- end }}
   selector:
     app.kubernetes.io/name: {{ include "metrics-server-exporter.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

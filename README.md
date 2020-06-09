@@ -126,7 +126,10 @@ To install metrics-server-exporter, use
 You could set the variables using the `--set` parameters
 
 	$ helm install --name=metrics-server-exporter --set custom.k8s_endpoint=https://kubernetes.default.svc helm/
-	
+
+You could assign a specific nodePort.
+  $ helm install --name=metrics-server-exporter --set service.type=NodePort --set service.nodePort=31001 helm/
+
 ### Grafana Dashboard
 
 You can use the following dashboard to plot metrics from metrics-server-exporter to Grafana.
@@ -134,4 +137,3 @@ You can use the following dashboard to plot metrics from metrics-server-exporter
 ![image](https://user-images.githubusercontent.com/3788237/82919047-e6b1d880-9f4b-11ea-9133-584d9b6abf86.png)
 
 https://grafana.com/grafana/dashboards/12363
-
