@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import getopt
 import os
 import requests
 import string
 import sys
 import time
+from optparse import OptionParser
 
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -16,10 +16,13 @@ from prometheus_client.core import REGISTRY
 
 class MetricsServerExporter:
 
-    def __init__(self):
-        self.svc_token       = os.environ.get('K8S_FILEPATH_TOKEN', '/var/run/secrets/kubernetes.io/serviceaccount/token')
-        self.ca_cert         = os.environ.get('K8S_CA_CERT_PATH', '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
-        self.api_url         = os.environ.get('K8S_ENDPOINT', 'https://kubernetes.default.svc')
+    def __init__(self, ca_cert, api_url, svc_token):
+        # self.svc_token       = os.environ.get('K8S_FILEPATH_TOKEN', '/var/run/secrets/kubernetes.io/serviceaccount/token')
+        # self.ca_cert         = os.environ.get('K8S_CA_CERT_PATH', '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
+        # self.api_url         = os.environ.get('K8S_ENDPOINT', 'https://kubernetes.default.svc')
+        self.svc_token = svc_token
+        self.ca_cert = ca_cert
+        self.api_url = api_url
         self.names_blacklist = os.environ.get('NAMES_BLACKLIST', '').split(',')
         self.namespaces      = os.environ.get('NAMESPACE_WHITELIST','').split(',')
         self.labelSelector   = os.environ.get('LABEL_SELECTOR','')
@@ -31,7 +34,8 @@ class MetricsServerExporter:
         self.token = self.set_token()
 
     def set_tls_mode(self):
-        return ('--insecure-tls','') in options
+        # return ('--insecure-tls','') in options
+        return False # 默认开启 --insecure-tls
 
     def set_token(self):
         if os.environ.get('K8S_TOKEN') is not None:
@@ -39,7 +43,7 @@ class MetricsServerExporter:
 
         if os.path.exists(self.svc_token):
             with open(self.svc_token, 'r') as f:
-                os.environ['K8S_TOKEN'] = f.readline()
+                os.environ['K8S_TOKEN'] = f.read().splitlines()[0]
             return os.environ.get('K8S_TOKEN')
 
         return None
@@ -132,9 +136,27 @@ class MetricsServerExporter:
         yield metrics_pods_mem
         yield metrics_pods_cpu
 
+
 if __name__ == '__main__':
-    options, remainder = getopt.gnu_getopt(sys.argv[1:], '', ['insecure-tls'])
-    REGISTRY.register(MetricsServerExporter())
+    usage = u"usage: app.py --ca_cert=[ca_cert] --api_url=[api_url]"
+    parser = OptionParser(usage)
+
+    parser.add_option("--ca_cert", dest="ca_cert", type="string",
+                      default="", help="ca.crt path")
+    parser.add_option("--api_url", dest="api_url", type="string",
+                      default="https://kubernetes.default.svc", help="kube-apiserver endpoint")
+    parser.add_option("--svc_token", dest="svc_token", type="string",
+                      default="", help="token path")
+
+    (options, args) = parser.parse_args()
+    if not options.ca_cert:
+        raise Exception(u"--ca_cert is empty")
+    if not options.api_url:
+        raise Exception(u"--api_url is empty")
+    if not options.svc_token:
+        raise Exception(u"--svc_token is empty")
+
+    REGISTRY.register(MetricsServerExporter(options.ca_cert, options.api_url, options.svc_token))
     start_http_server(8000)
     while True:
         time.sleep(5)
