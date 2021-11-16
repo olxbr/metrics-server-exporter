@@ -1,0 +1,54 @@
+name: Security Workflow
+
+on: [push, workflow_dispatch]
+
+jobs:
+  static-analysis:
+    name: "Static Analysis"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: "0"
+
+      - name: Run Gitleaks
+        id: gitleaks
+        uses: olxbr/gitleaks-action@main
+
+      - name: Submit Gitleaks metrics
+        run: |
+          ENDPOINT=$(echo "${{ secrets.GH_METRICS_SERVER_ENDPOINT }}" | awk -F/ '{print $3}')
+          DATA=$( \
+          jq -n \
+          --arg GITHUB_WORKFLOW "$GITHUB_WORKFLOW" \
+          --arg GITHUB_JOB "$GITHUB_JOB" \
+          --arg GITHUB_RUN_ID "$GITHUB_RUN_ID" \
+          --arg GITHUB_SHA "$GITHUB_SHA" \
+          --arg GITHUB_REPOSITORY "$GITHUB_REPOSITORY" \
+          --arg GITLEAKS_EXIT_CODE "${{ steps.gitleaks.outputs.exit_code }}" \
+          --argjson GITLEAKS_RESULT '${{ steps.gitleaks.outputs.result }}' \
+          '{
+              "workflow_job": {
+                "name": $GITHUB_WORKFLOW,
+                "id": $GITHUB_JOB,
+                "run_id": $GITHUB_RUN_ID,
+                "head_sha": $GITHUB_SHA
+              },
+              "repository": {
+                "full_name": $GITHUB_REPOSITORY
+              },
+              "custom_metrics": {
+                "outputs.exit_code": $GITLEAKS_EXIT_CODE,
+                "outputs.result": $GITLEAKS_RESULT
+              }
+          }' \
+          )
+          curl -sv "https://${ENDPOINT}/gitleaks" -d "$DATA" -H "Content-Type: application/json" --connect-timeout 15 --max-time 30
+
+      - name: Evaluate Gitleaks exit code
+        if: steps.gitleaks.outputs.exit_code != 0
+        uses: actions/github-script@v5
+        with:
+          script: |
+            core.setFailed("Gitleaks encountered leaks. Please fix it in order to keep a safe work.")
