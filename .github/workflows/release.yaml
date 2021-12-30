@@ -1,0 +1,38 @@
+name: Release
+on: release
+jobs:
+
+  publish:
+    name: publish
+    runs-on: ubuntu-20.04
+    
+    steps:
+      - name: "Get release name"
+        id: "release-name"
+        run: "echo \"::set-output name=release::${GITHUB_REF##*/}\""
+      
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Restore docker cache
+        uses: actions/cache@v2
+        with:
+          path: ~/docker-cache-final-image
+          key: metrics-server-exporter-docker-final-image-${{ github.sha }}
+          restore-keys: |
+            metrics-server-exporter-docker-final-image-${{ github.sha }}
+      
+      - name: Load tar file
+        run: docker load < ~/docker-cache-final-image/metrics-server-exporter.tar
+
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: tag docker image
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        run: |
+          docker tag vivareal/metrics-server-exporter:build vivareal/metrics-server-exporter:${{ steps.release-name.outputs.release }}
+          docker push vivareal/metrics-server-exporter:${{ steps.release-name.outputs.release }}
