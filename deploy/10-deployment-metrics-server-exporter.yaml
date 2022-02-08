@@ -22,7 +22,7 @@ spec:
       serviceAccountName: metrics-server-exporter
       containers:
       - name: metrics-server-exporter
-        image: vivareal/metrics-server-exporter:v0.0.7
+        image: 073521391622.dkr.ecr.us-east-1.amazonaws.com/metrics-server-exporter:v0.0.7
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000

@@ -34,5 +34,5 @@ jobs:
       - name: tag docker image
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         run: |
-          docker tag vivareal/metrics-server-exporter:build vivareal/metrics-server-exporter:${{ steps.release-name.outputs.release }}
-          docker push vivareal/metrics-server-exporter:${{ steps.release-name.outputs.release }}
+          docker tag ${{ secrets.CONTAINER_REGISTRY_HOST }}/<PUT_THE_BU_AND_TEAM_NAME_HERE>/metrics-server-exporter:build ${{ secrets.CONTAINER_REGISTRY_HOST }}/<PUT_THE_BU_AND_TEAM_NAME_HERE>/metrics-server-exporter:${{ steps.release-name.outputs.release }}
+          docker push ${{ secrets.CONTAINER_REGISTRY_HOST }}/<PUT_THE_BU_AND_TEAM_NAME_HERE>/metrics-server-exporter:${{ steps.release-name.outputs.release }}
