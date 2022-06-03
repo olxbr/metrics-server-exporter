@@ -8,7 +8,7 @@ on:
 # .github/workflows/blackbox-workflow.yml
 jobs:
     run-blackbox-action:
-        runs-on: [self-hosted, tech-radar]
+        runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
               with:
