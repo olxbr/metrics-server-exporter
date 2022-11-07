@@ -57,13 +57,13 @@ metrics-server-exporter provides cpu and memory metrics for nodes and pods, dire
 
 ### How to build
 
-    $ docker build . -t vivareal/metrics-server-exporter
+    $ docker build . -t ${{ secrets.CONTAINER_REGISTRY_HOST }}/metrics-server-exporter
 
 ### How to run
 
 You will need `K8S_TOKEN` and `K8S_ENDPOINT` to access the api-server.  Use "--insecure-tls" or mount the CA certificate into the container.  Kubernetes will provide the CA certificate in a Kubernetes installation.
 
-    $ docker run -p 8000:8000 -e "K8S_ENDPOINT=${K8S_ENDPOINT}" -e "K8S_TOKEN=${K8S_TOKEN}" vivareal/metrics-server-exporter --insecure-tls
+    $ docker run -p 8000:8000 -e "K8S_ENDPOINT=${K8S_ENDPOINT}" -e "K8S_TOKEN=${K8S_TOKEN}" ${{ secrets.CONTAINER_REGISTRY_HOST }}/metrics-server-exporter --insecure-tls
 
 ### How to deploy
 

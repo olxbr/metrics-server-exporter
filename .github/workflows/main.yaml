@@ -32,12 +32,17 @@ jobs:
           restore-keys: |
             metrics-server-exporter-docker-${{ github.sha }}
             
+
+      - name: Login to ECR
+        run: |
+          echo "${{ secrets.DOCKER_ECR_PASSWORD }}" | docker login --username AWS --password-stdin ${{ secrets.CONTAINER_REGISTRY_HOST }}
+
       - name: build final docker image
         run: |
           docker load < ~/docker-cache/metrics-server-exporter-test.tar
-          docker build -t vivareal/metrics-server-exporter:build .
+          docker build -t ${{ secrets.CONTAINER_REGISTRY_HOST }}/<PUT_THE_BU_AND_TEAM_NAME_HERE>/metrics-server-exporter:build .
           mkdir -p ~/docker-cache-final-image
-          docker save -o ~/docker-cache-final-image/metrics-server-exporter.tar vivareal/metrics-server-exporter
+          docker save -o ~/docker-cache-final-image/metrics-server-exporter.tar ${{ secrets.CONTAINER_REGISTRY_HOST }}/<PUT_THE_BU_AND_TEAM_NAME_HERE>/metrics-server-exporter
         
       - name: Save docker cache final image
         uses: actions/cache@v2
@@ -75,8 +80,16 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: tag publish docker image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        run: |
-          docker tag vivareal/metrics-server-exporter:build vivareal/metrics-server-exporter:master
-          docker push vivareal/metrics-server-exporter:master
+      - name: Push to ECR
+        uses: olxbr/aws-ecr-push-action@v1
+        id: ecr
+        with:
+          # The complete repository name from ECR {BU}/{TEAM}/{PROJECT} (ex. cross/devtools/devtools-scripts).
+          ecr_repository: "<PUT_THE_BU_AND_TEAM_NAME_HERE>/metrics-server-exporter"
+          tags: "master"
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_CROSS_ACCOUNT_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_CROSS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_CROSS_SECRET_ACCESS_KEY }}
+          AWS_PRINCIPAL_RULES: ${{ secrets.AWS_PRINCIPAL_RULES }}
+
