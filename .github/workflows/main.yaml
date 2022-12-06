@@ -3,6 +3,13 @@ on:
   pull_request:
   push:
     branches: [master]
+    
+env:
+  # Metrics server exporter
+  APP_NAME: "metrics-server-exporter"
+  APP_VERSION: "1.0.0"
+  DOCKERFILE_PATH: "./Dockerfile" 
+
 jobs:
   kubeval:
     runs-on: ubuntu-latest
@@ -15,81 +22,33 @@ jobs:
         strict: false
         version: "1.18.12"
 
-  build:
-    name: Build
-    runs-on: ubuntu-20.04
-    needs: unit-tests
+  build-push-image:
+    runs-on: [self-hosted, cross, prod]
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
 
-      - name: Restore docker cache
-        uses: actions/cache@v2
-        with:
-          path: ~/docker-cache
-          key: metrics-server-exporter-docker-${{ github.sha }}
-          restore-keys: |
-            metrics-server-exporter-docker-${{ github.sha }}
-            
+      - uses: actions/checkout@v2
 
-      - name: Login to ECR
+      # Build docker image
+      - name: Docker image build
+        id: build-image
+        env:
+            ECR_REPOSITORY: 'cross/${{ env.OLX_TEAM }}/${{ env.APP_NAME }}'
+            IMAGE_TAG: ${{ steps.tag-repo-generate.outputs.new_tag }}     
         run: |
-          echo "${{ secrets.DOCKER_ECR_PASSWORD }}" | docker login --username AWS --password-stdin ${{ secrets.CONTAINER_REGISTRY_HOST }}
+            docker build -t ${{ secrets.CONTAINER_REGISTRY_HOST }}/$ECR_REPOSITORY:${{ env.APP_VERSION }}-$IMAGE_TAG -f ${{ env.DOCKERFILE_PATH }} .
 
-      - name: build final docker image
-        run: |
-          docker load < ~/docker-cache/metrics-server-exporter-test.tar
-          docker build -t ${{ secrets.CONTAINER_REGISTRY_HOST }}/<PUT_THE_BU_AND_TEAM_NAME_HERE>/metrics-server-exporter:build .
-          mkdir -p ~/docker-cache-final-image
-          docker save -o ~/docker-cache-final-image/metrics-server-exporter.tar ${{ secrets.CONTAINER_REGISTRY_HOST }}/<PUT_THE_BU_AND_TEAM_NAME_HERE>/metrics-server-exporter
-        
-      - name: Save docker cache final image
-        uses: actions/cache@v2
-        with:
-          path: ~/docker-cache-final-image
-          key: metrics-server-exporter-docker-final-image-${{ github.sha }}
-
-  publish:
-    name: publish
-    needs: build
-    runs-on: ubuntu-20.04
-
-    steps:
-      - name: "Get release name"
-        id: "release-name"
-        run: "echo \"::set-output name=release::${GITHUB_REF##*/}\""
-
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
-      - name: Restore docker cache
-        uses: actions/cache@v2
-        with:
-          path: ~/docker-cache-final-image
-          key: metrics-server-exporter-docker-final-image-${{ github.sha }}
-          restore-keys: |
-            metrics-server-exporter-docker-final-image-${{ github.sha }}
-      
-      - name: Load tar file
-        run: docker load < ~/docker-cache-final-image/metrics-server-exporter.tar
-
-      - name: Docker login
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Push to ECR
+      # Push Image
+      - name: Push image prometheus to ECR 
         uses: olxbr/aws-ecr-push-action@v1
-        id: ecr
+        id: push-ecr
         with:
-          # The complete repository name from ECR {BU}/{TEAM}/{PROJECT} (ex. cross/devtools/devtools-scripts).
-          ecr_repository: "<PUT_THE_BU_AND_TEAM_NAME_HERE>/metrics-server-exporter"
-          tags: "master"
+          ecr_repository: 'cross/${{ env.OLX_TEAM }}/${{ env.APP_NAME }}'
+          tags: ${{ env.APP_VERSION }}-${{ steps.tag-repo-generate.outputs.new_tag }}
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_CROSS_ACCOUNT_ID }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_CROSS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_CROSS_SECRET_ACCESS_KEY }}
-          AWS_PRINCIPAL_RULES: ${{ secrets.AWS_PRINCIPAL_RULES }}
+          AWS_PRINCIPAL_RULES: ${{ secrets.AWS_PRINCIPAL_RULES }}  
+          IMAGE_TAG: ${{ env.APP_VERSION }}-${{ steps.tag-repo-generate.outputs.new_tag }}
 
