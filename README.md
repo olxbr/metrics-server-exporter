@@ -1,5 +1,8 @@
-# metrics-server-exporter [![CircleCI](https://circleci.com/gh/grupozap/metrics-server-exporter.svg?style=svg)](https://circleci.com/gh/grupozap/metrics-server-exporter) [![Total alerts](https://img.shields.io/lgtm/alerts/g/grupozap/metrics-server-exporter.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/grupozap/metrics-server-exporter/alerts/) [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/grupozap/metrics-server-exporter.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/grupozap/metrics-server-exporter/context:python)
+# metrics-server-exporter
+
 metrics-server-exporter provides cpu and memory metrics for nodes and pods, directly querying the metrics-server API `/apis/metrics.k8s.io/v1beta1/{pods, nodes}`
+
+>  **Projeto obsoleto usado apenas no cluster do ZAP com kubernetes versão 1.18**
 
 ### Node metrics
 
