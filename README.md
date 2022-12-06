@@ -2,7 +2,7 @@
 
 metrics-server-exporter provides cpu and memory metrics for nodes and pods, directly querying the metrics-server API `/apis/metrics.k8s.io/v1beta1/{pods, nodes}`
 
->  **Projeto obsoleto usado apenas no cluster do ZAP com kubernetes versão 1.18**
+>  **Projeto obsoleto - utilize o kube-state-metrics**
 
 ### Node metrics
 
